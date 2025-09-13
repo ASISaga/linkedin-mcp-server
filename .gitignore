@@ -163,6 +163,9 @@ local.settings.json
 __azurite_db*.json
 .vscode/
 
+# Development and testing files
+test_azure_functions.py
+
 # Cython debug symbols
 cython_debug/
 
