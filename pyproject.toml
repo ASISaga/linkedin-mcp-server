@@ -10,8 +10,9 @@ dependencies = [
     "fastmcp>=2.10.1",
     "inquirer>=3.4.0",
     "keyring>=25.6.0",
-    "linkedin-scraper",
+    "linkedin-api-client",
     "pyperclip>=1.9.0",
+    "python-dotenv>=1.1.0",
 ]
 
 [project.scripts]
@@ -29,7 +30,7 @@ exclude = ["assets*", "docs*", "tests*"]
 linkedin_mcp_server = ["py.typed"]
 
 [tool.uv.sources]
-linkedin-scraper = { git = "https://github.com/stickerdaniel/linkedin_scraper.git" }
+# Remove linkedin-scraper dependency as we're migrating to official API
 
 [dependency-groups]
 dev = [

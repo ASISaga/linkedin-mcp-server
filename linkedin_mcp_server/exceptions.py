@@ -10,17 +10,29 @@ Provides structured error handling for better debugging and user experience.
 
 class LinkedInMCPError(Exception):
     """Base exception for LinkedIn MCP Server."""
-
     pass
 
 
 class CredentialsNotFoundError(LinkedInMCPError):
     """No credentials available in non-interactive mode."""
-
     pass
 
 
 class DriverInitializationError(LinkedInMCPError):
     """Failed to initialize Chrome WebDriver."""
+    pass
 
+
+class AuthenticationError(LinkedInMCPError):
+    """Authentication failed or access token invalid."""
+    pass
+
+
+class APIError(LinkedInMCPError):
+    """LinkedIn API request failed."""
+    pass
+
+
+class ConfigurationError(LinkedInMCPError):
+    """Configuration error or missing required settings."""
     pass
