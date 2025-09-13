@@ -157,6 +157,12 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+# Azure Functions
+local.settings.json
+.azure/
+__azurite_db*.json
+.vscode/
+
 # Cython debug symbols
 cython_debug/
 
