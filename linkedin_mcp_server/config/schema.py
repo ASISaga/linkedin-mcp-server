@@ -26,18 +26,38 @@ class ConfigurationError(Exception):
 
 @dataclass
 class ChromeConfig:
-    """Configuration for Chrome driver."""
+    """Configuration for Chrome driver (DEPRECATED - Not used in official API mode)."""
 
     headless: bool = True
     chromedriver_path: Optional[str] = None
     browser_args: List[str] = field(default_factory=list)
     user_agent: Optional[str] = None
+    
+    def __post_init__(self):
+        """Warn about deprecated Chrome configuration."""
+        import warnings
+        warnings.warn(
+            "ChromeConfig is deprecated. The LinkedIn MCP Server now uses the official LinkedIn API "
+            "instead of web scraping and no longer requires Chrome/Selenium.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
 
 @dataclass
 class LinkedInConfig:
-    """LinkedIn connection configuration."""
+    """LinkedIn OAuth 2.0 configuration for official API access."""
 
+    # OAuth 2.0 credentials
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
+    redirect_uri: str = "http://localhost:8000/auth/callback"
+    
+    # Access token (for direct API access without OAuth flow)
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    
+    # Legacy scraping credentials (deprecated)
     email: Optional[str] = None
     password: Optional[str] = None
     cookie: Optional[str] = None
@@ -49,14 +69,15 @@ class ServerConfig:
 
     transport: Literal["stdio", "streamable-http"] = "stdio"
     transport_explicitly_set: bool = False  # Track if transport was explicitly set
-    lazy_init: bool = True
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "WARNING"
-    get_cookie: bool = False
-    clear_keychain: bool = False
+    
     # HTTP transport configuration
     host: str = "127.0.0.1"
     port: int = 8000
     path: str = "/mcp"
+    
+    # OAuth flow configuration
+    oauth_flow: bool = False  # Enable OAuth flow for authentication
 
 
 @dataclass
