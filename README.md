@@ -1,4 +1,4 @@
-# LinkedIn MCP Server
+# LinkedIn MCP Server (Official API)
 
 <p align="left">
   <a href="https://github.com/stickerdaniel/linkedin-mcp-server/actions/workflows/ci.yml" target="_blank"><img src="https://github.com/stickerdaniel/linkedin-mcp-server/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI Status"></a>
@@ -6,7 +6,69 @@
   <a href="https://github.com/stickerdaniel/linkedin-mcp-server/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/badge/License-Apache%202.0-brightgreen?labelColor=32383f" alt="License"></a>
 </p>
 
-Through this LinkedIn MCP server, AI assistants like Claude can connect to your LinkedIn. Give access to profiles and companies, get your recommended jobs, or search for keywords. Available as cloud-based Azure Functions or local installation.
+**⚡ NOW USING OFFICIAL LINKEDIN API ⚡**
+
+Through this LinkedIn MCP server, AI assistants like Claude can connect to LinkedIn using the **official LinkedIn API** with proper OAuth 2.0 authentication. This ensures compliance with LinkedIn's Terms of Service and provides enterprise-grade reliability.
+
+## 🔄 Migration Completed: Web Scraping → Official API
+
+This server has been **fully migrated** from web scraping to the official LinkedIn API:
+
+✅ **What Changed:**
+- Web scraping → Official LinkedIn REST API
+- Cookie authentication → OAuth 2.0 with access tokens  
+- Chrome/Selenium → HTTP API client
+- Terms violation → Fully compliant API usage
+
+⚠️ **Important Limitations:**
+- **Profile access**: Only your own authenticated profile (not public profiles)
+- **Company access**: Only companies you manage or have admin access to
+- **Job access**: Only job postings from your companies  
+- **No public search**: Cannot search arbitrary profiles/companies/jobs
+
+🎯 **New Capabilities:**
+- OAuth 2.0 authentication flow
+- Compliant LinkedIn API usage
+- Enterprise-ready architecture  
+- Stable API contract (no breaking changes from UI updates)
+
+## 🚀 Quick Start with Official API
+
+### 1. Prerequisites
+- LinkedIn Developer Account
+- LinkedIn Developer Application with OAuth credentials
+
+### 2. Setup LinkedIn Developer App
+```bash
+# See detailed setup guide
+cat LINKEDIN_PERMISSIONS_SETUP.md
+```
+
+### 3. Configure OAuth Credentials
+```bash
+export LINKEDIN_CLIENT_ID="your_client_id"
+export LINKEDIN_CLIENT_SECRET="your_client_secret"
+export LINKEDIN_REDIRECT_URI="http://localhost:8000/auth/callback"
+
+# Optional: Direct access token for testing
+export LINKEDIN_ACCESS_TOKEN="your_access_token"
+```
+
+### 4. Install and Run
+```bash
+# Install dependencies
+pip install linkedin-api-client fastmcp keyring python-dotenv
+
+# Run the server
+python -m linkedin_mcp_server
+```
+
+### 5. OAuth Authentication Flow
+1. Use `get_oauth_authorization_url` tool to get authorization URL
+2. Direct user to authorization URL for consent  
+3. Get authorization code from callback
+4. Use `exchange_oauth_code` to get access token
+5. Use API with authenticated access token
 
 ## Installation Methods
 
@@ -17,31 +79,40 @@ Through this LinkedIn MCP server, AI assistants like Claude can connect to your 
 
 https://github.com/user-attachments/assets/eb84419a-6eaf-47bd-ac52-37bc59c83680
 
-## Usage Examples
+## Usage Examples (Official API)
 ```
-What are my recommended jobs I can apply to?
-```
-```
-Research the background of this candidate https://www.linkedin.com/in/stickerdaniel/
+Help me set up OAuth authentication with LinkedIn
 ```
 ```
-Get this company profile for partnership discussions https://www.linkedin.com/company/inframs/
+Get my LinkedIn profile information
 ```
 ```
-Suggest improvements for my CV to target this job posting https://www.linkedin.com/jobs/view/4252026496
+What companies do I have admin access to on LinkedIn?
+```
+```
+Show me job postings from companies I manage
+```
+```
+What are the limitations of the official LinkedIn API?
 ```
 
-## Features & Tool Status
+## Features & Tool Status (Official LinkedIn API)
 > [!TIP]
-> - **Profile Scraping** (`get_person_profile`): Get detailed information from a LinkedIn profile including work history, education, skills, and connections
-> - **Company Analysis** (`get_company_profile`): Extract comprehensive company information from a LinkedIn company profile name
-> - **Job Details** (`get_job_details`): Retrieve specific job posting details using LinkedIn job IDs
-> - **Job Search** (`search_jobs`): Search for jobs with filters like keywords and location
-> - **Recommended Jobs** (`get_recommended_jobs`): Get personalized job recommendations based on your profile
-> - **Session Management** (`close_session`): Properly close browser session and clean up resources
+> - **OAuth Authentication** (`get_oauth_authorization_url`, `exchange_oauth_code`): Complete OAuth 2.0 flow for secure API access
+> - **Profile Access** (`get_current_user_profile`): Get authenticated user's LinkedIn profile information
+> - **Token Management** (`get_token_info`, `refresh_access_token`): Manage and refresh access tokens
+> - **Company Management** (`search_companies`, `get_managed_companies`): Access companies you manage
+> - **Job Management** (`search_job_postings`, `create_job_posting`): Manage job postings for your companies
+> - **API Information** (`get_api_migration_info`): Learn about API capabilities and limitations
 
-> [!NOTE]
-> July 2025: All tools are currently functional and actively maintained. If you encounter any issues, please report them in the [GitHub issues](https://github.com/stickerdaniel/linkedin-mcp-server/issues).
+> [!IMPORTANT]
+> **API Limitations**: The official LinkedIn API has significant restrictions compared to web scraping:
+> - **Profile access**: Only your own authenticated profile
+> - **Company access**: Only companies you manage or have admin permissions for
+> - **Job access**: Only job postings from companies you manage
+> - **No public search**: Cannot access arbitrary public profiles, companies, or job listings
+> 
+> These limitations are imposed by LinkedIn's official API and ensure compliance with their Terms of Service.
 
 <br/>
 <br/>
