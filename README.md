@@ -6,13 +6,13 @@
   <a href="https://github.com/stickerdaniel/linkedin-mcp-server/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/badge/License-Apache%202.0-brightgreen?labelColor=32383f" alt="License"></a>
 </p>
 
-Through this LinkedIn MCP server, AI assistants like Claude can connect to your LinkedIn. Give access to profiles and companies, get your recommended jobs, or search for keywords. All from a Docker container on your machine.
+Through this LinkedIn MCP server, AI assistants like Claude can connect to your LinkedIn. Give access to profiles and companies, get your recommended jobs, or search for keywords. Available as cloud-based Azure Functions or local installation.
 
 ## Installation Methods
 
-[![Docker](https://img.shields.io/badge/Docker-Universal_MCP-008fe2?style=for-the-badge&logo=docker&logoColor=008fe2)](#-docker-setup-recommended---universal)
+[![Azure Functions](https://img.shields.io/badge/Azure_Functions-Cloud_Deployment-0078d4?style=for-the-badge&logo=microsoft-azure&logoColor=0078d4)](#-azure-functions-deployment-recommended---cloud)
 [![Install DXT Extension](https://img.shields.io/badge/Claude_Desktop_DXT-d97757?style=for-the-badge&logo=anthropic)](#-claude-desktop-dxt-extension)
-[![uvx](https://img.shields.io/badge/uvx-Quick_Install-de5fe9?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCA0MSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTS01LjI4NjE5ZS0wNiAwLjE2ODYyOUwwLjA4NDMwOTggMjAuMTY4NUwwLjE1MTc2MiAzNi4xNjgzQzAuMTYxMDc1IDM4LjM3NzQgMS45NTk0NyA0MC4xNjA3IDQuMTY4NTkgNDAuMTUxNEwyMC4xNjg0IDQwLjA4NEwzMC4xNjg0IDQwLjA0MThMMzEuMTg1MiA0MC4wMzc1QzMzLjM4NzcgNDAuMDI4MiAzNS4xNjgzIDM4LjIwMjYgMzUuMTY4MyAzNlYzNkwzNy4wMDAzIDM2TDM3LjAwMDMgMzkuOTk5Mkw0MC4xNjgzIDM5Ljk5OTZMMzkuOTk5NiAtOS45NDY1M2UtMDdMMjEuNTk5OCAwLjA3NzU2ODlMMjEuNjc3NCAxNi4wMTg1TDIxLjY3NzQgMjUuOTk5OEwyMC4wNzc0IDI1Ljk5OThMMTguMzk5OCAyNS45OTk4TDE4LjQ3NzQgMTYuMDMyTDE4LjM5OTggMC4wOTEwNTkzTC01LjI4NjE5ZS0wNiAwLjE2ODYyOVoiIGZpbGw9IiNERTVGRTkiLz4KPC9zdmc+Cg==)](#-uvx-setup-quick-install---universal)
+[![uvx](https://img.shields.io/badge/uvx-Quick_Install-de5fe9?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCA0MSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTS01LjI4NjE5ZS0wNiAwLjE2ODYyOUwwLjA4NDMwOTggMjAuMTY4NUwwLjE1MTc2MiAzNi4xNjgzQzAuMTYxMDc1IDM4LjM3NzQgMS45NTk0NyA0MC4xNjA3IDQuMTY4NTkgNDAuMTUxNEwyMC4xNjg0IDQwLjA4NEwzMC4xNjg0IDQwLjA0MThMMzEuMTg1MiA0MC4wMzc1QzMzLjM4NzcgNDAuMDI4MiAzNS4xNjgzIDM4LjIwMjYgMzUuMTY4MyAzNlYzNkwzNy4wMDAzIDM2TDM3LjAwMDMgMzkuOTk5Mkw0MC4xNjgzIDM5Ljk5OTZMMzkuOTk5NiAtOS45NDY1M2UtMDdMMjEuNTk5OCAwLjA3NzU2ODlMMjEuNjc3NCAxNi4wMTg1TDIxLjY77NCwyNS45OTk4TDIwLjA3NzQgMjUuOTk5OEwxOC4zOTk4IDI1Ljk5OThMMTguNDc3NCAxNi4wMzJMMTguMzk5OCAwLjA5MTA1OTNMLTUUMITIG5ZS0wNiAwLjE2ODYyOVoiIGZpbGw9IiNERTVGRTkiLz4KPC9zdmc+Cg==)](#-uvx-setup-quick-install---universal)
 [![Development](https://img.shields.io/badge/Development-Local-ffdc53?style=for-the-badge&logo=python&logoColor=ffdc53)](#-local-setup-develop--contribute)
 
 https://github.com/user-attachments/assets/eb84419a-6eaf-47bd-ac52-37bc59c83680
@@ -46,32 +46,59 @@ Suggest improvements for my CV to target this job posting https://www.linkedin.c
 <br/>
 <br/>
 
-## 🐳 Docker Setup (Recommended - Universal)
+## ☁️ Azure Functions Deployment (Recommended - Cloud)
 
-**Prerequisites:** Make sure you have [Docker](https://www.docker.com/get-started/) installed and running.
+**Prerequisites:** [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) installed.
 
-### Installation
+### Quick Deployment
 
-**Client Configuration:**
-```json
-{
-  "mcpServers": {
-    "linkedin": {
-      "command": "docker",
-      "args": [
-        "run", "--rm", "-i",
-        "-e", "LINKEDIN_COOKIE",
-        "stickerdaniel/linkedin-mcp-server:latest"
-      ],
-      "env": {
-        "LINKEDIN_COOKIE": "li_at=YOUR_COOKIE_VALUE"
-      }
-    }
-  }
-}
+Run the automated deployment script:
+
+```bash
+# Make the script executable
+chmod +x azure-deploy.sh
+
+# Run deployment (will prompt for configuration)
+./azure-deploy.sh
+```
+
+The script will:
+1. Create Azure resource group
+2. Set up Function App with consumption plan  
+3. Deploy the LinkedIn MCP Server
+4. Configure environment variables
+5. Provide access URLs
+
+### Manual Deployment
+
+**1. Login to Azure:**
+```bash
+az login
+```
+
+**2. Create resources:**
+```bash
+# Create resource group
+az group create --name linkedin-mcp-rg --location "East US"
+
+# Create storage account  
+az storage account create --name linkedinmcpstorage --location "East US" --resource-group linkedin-mcp-rg --sku Standard_LRS
+
+# Create function app
+az functionapp create --resource-group linkedin-mcp-rg --consumption-plan-location "East US" --runtime python --runtime-version 3.11 --functions-version 4 --name linkedin-mcp-server --storage-account linkedinmcpstorage
+```
+
+**3. Deploy and configure:**
+```bash
+# Deploy the function
+func azure functionapp publish linkedin-mcp-server
+
+# Set LinkedIn cookie
+az functionapp config appsettings set --name linkedin-mcp-server --resource-group linkedin-mcp-rg --settings LINKEDIN_COOKIE="your_linkedin_cookie_here"
 ```
 
 ### Getting the LinkedIn Cookie
+
 <details>
 <summary><b>🌐 Chrome DevTools Guide</b></summary>
 
@@ -80,74 +107,92 @@ Suggest improvements for my CV to target this job posting https://www.linkedin.c
 3. Go to **Application** > **Storage** > **Cookies** > **https://www.linkedin.com**
 4. Find the cookie named `li_at`
 5. Copy the **Value** field (this is your LinkedIn session cookie)
-6. Use this value as your `LINKEDIN_COOKIE` in the configuration
+6. Use this value as your `LINKEDIN_COOKIE` in the Azure Function settings
 
 </details>
-<details>
-<summary><b>🐳 Docker get-cookie method</b></summary>
 
-**Run the server with the `--get-cookie` flag:**
-```bash
-docker run -it --rm \
-  stickerdaniel/linkedin-mcp-server:latest \
-  --get-cookie
+### Usage
+
+Once deployed, your LinkedIn MCP Server will be available at:
+- **Health Check**: `https://your-function-app.azurewebsites.net/api/health`
+- **MCP Endpoint**: `https://your-function-app.azurewebsites.net/api/mcp`
+
+**Client Configuration for Azure Functions:**
+```json
+{
+  "mcpServers": {
+    "linkedin": {
+      "command": "curl",
+      "args": [
+        "-X", "POST", 
+        "https://your-function-app.azurewebsites.net/api/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
 ```
-Copy the cookie from the output and set it as `LINKEDIN_COOKIE` in your client configuration. If this fails with a captcha challenge, use the method above.
-</details>
+
+### Azure Functions Benefits
+
+- **Serverless**: No server management required
+- **Auto-scaling**: Automatically scales based on demand
+- **Pay-per-use**: Only pay for actual executions
+- **High availability**: Built-in redundancy and failover
+- **Integrated monitoring**: Azure Application Insights included
+- **Secure**: Function-level authentication and Azure security
+
+### Cost Estimation
+
+Azure Functions consumption plan pricing:
+- **Free tier**: 1 million requests and 400,000 GB-seconds per month
+- **Beyond free tier**: $0.20 per million executions + $0.000016/GB-second
+- **Typical cost**: $5-20/month for moderate usage (100-500 LinkedIn operations/day)
 
 > [!NOTE]
-> The cookie will expire during the next 30 days. Just get the new cookie and update your client config. There are also many cookie manager extensions that you can use to quickly copy the cookie.
+> The cookie will expire after 30 days. Update the `LINKEDIN_COOKIE` environment variable in Azure when needed.
 
-### Docker Setup Help
 <details>
-<summary><b>🔧 Configuration</b></summary>
+<summary><b>🔧 Advanced Configuration</b></summary>
 
-**Transport Modes:**
-- **Default (stdio)**: Standard communication for local MCP servers
-- **Streamable HTTP**: For a web-based MCP server
+**Environment Variables:**
+- `LINKEDIN_COOKIE` - LinkedIn session cookie (required)
+- `LINKEDIN_MCP_LOG_LEVEL` - Logging level (DEBUG, INFO, WARNING, ERROR)
+- `LINKEDIN_MCP_HEADLESS` - Run browser in headless mode (default: 1)
+- `LINKEDIN_MCP_LAZY_INIT` - Initialize browser on first request (default: 1)
 
-**CLI Options:**
-- `--log-level {DEBUG,INFO,WARNING,ERROR}` - Set logging level (default: WARNING)
-- `--no-lazy-init` - Login to LinkedIn immediately instead of waiting for the first tool call
-- `--transport {stdio,streamable-http}` - Set transport mode
-- `--host HOST` - HTTP server host (default: 127.0.0.1)
-- `--port PORT` - HTTP server port (default: 8000)
-- `--path PATH` - HTTP server path (default: /mcp)
-- `--get-cookie` - Attempt to login with email and password and extract the LinkedIn cookie
-- `--cookie {cookie}` - Pass a specific LinkedIn cookie for login
-- `--user-agent {user_agent}` - Specify custom user agent string to prevent anti-scraping detection
-
-**HTTP Mode Example (for web-based MCP clients):**
+**Monitoring:**
 ```bash
-docker run -it --rm \
-  -e LINKEDIN_COOKIE="li_at=YOUR_COOKIE_VALUE" \
-  -p 8080:8080 \
-  stickerdaniel/linkedin-mcp-server:latest \
-  --transport streamable-http --host 0.0.0.0 --port 8080 --path /mcp
-```
+# View live logs
+az functionapp logs tail --name linkedin-mcp-server --resource-group linkedin-mcp-rg
 
-**Test with mcp inspector:**
-1. Install and run mcp inspector ```bunx @modelcontextprotocol/inspector```
-2. Click pre-filled token url to open the inspector in your browser
-3. Select `Streamable HTTP` as `Transport Type`
-4. Set `URL` to `http://localhost:8080/mcp`
-5. Connect
-6. Test tools
+# Enable Application Insights for detailed monitoring
+az monitor app-insights component create --app linkedin-mcp-server --location "East US" --resource-group linkedin-mcp-rg
+```
 
 </details>
 
 <details>
 <summary><b>❗ Troubleshooting</b></summary>
 
-**Docker issues:**
-- Make sure [Docker](https://www.docker.com/get-started/) is installed
-- Check if Docker is running: `docker ps`
+**Common Issues:**
+- **Function timeout**: Default timeout is 5 minutes. Browser initialization takes 10-30 seconds on cold start.
+- **Memory limits**: Chrome requires significant memory. Consider Premium plan for heavy usage.
+- **LinkedIn blocking**: Use valid cookies and avoid excessive requests.
 
-**Login issues:**
-- Ensure your LinkedIn cookie is set and correct
-- Make sure you have only one active LinkedIn session per cookie at a time. Trying to open multiple sessions with the same cookie will result in a cookie invalid error.
-- LinkedIn may require a login confirmation in the LinkedIn mobile app for --get-cookie
-- You might get a captcha challenge if you logged in a lot of times in a short period of time, then try again later or follow the [local setup instructions](#-local-setup-develop--contribute) to run the server manually in --no-headless mode where you can debug the login process (solve captcha manually)
+**Debug locally:**
+```bash
+# Install Azure Functions Core Tools
+npm install -g azure-functions-core-tools@4 --unsafe-perm true
+
+# Run locally
+func start
+
+# Test locally
+curl http://localhost:7071/api/health
+```
+
 </details>
 
 <br/>
@@ -155,12 +200,15 @@ docker run -it --rm \
 
 ## 📦 Claude Desktop (DXT Extension)
 
-**Prerequisites:** [Claude Desktop](https://claude.ai/download) and [Docker](https://www.docker.com/get-started/) installed
+**Prerequisites:** [Claude Desktop](https://claude.ai/download) installed
 
 **One-click installation** for Claude Desktop users:
 1. Download the [DXT extension](https://github.com/stickerdaniel/linkedin-mcp-server/releases/latest)
 2. Double-click to install into Claude Desktop
 3. Set your LinkedIn cookie in the extension settings
+
+> [!NOTE]
+> The DXT extension now uses the uvx installation method internally instead of Docker for better compatibility and performance.
 
 ### Getting the LinkedIn Cookie
 <details>
@@ -173,17 +221,6 @@ docker run -it --rm \
 5. Copy the **Value** field (this is your LinkedIn session cookie)
 6. Use this value as your `LINKEDIN_COOKIE` in the configuration
 
-</details>
-<details>
-<summary><b>🐳 Docker get-cookie method</b></summary>
-
-**Run the server with the `--get-cookie` flag:**
-```bash
-docker run -it --rm \
-  stickerdaniel/linkedin-mcp-server:latest \
-  --get-cookie
-```
-Copy the cookie from the output and set it as `LINKEDIN_COOKIE` in your client configuration. If this fails with a captcha challenge, use the method above.
 </details>
 
 > [!NOTE]
@@ -193,14 +230,14 @@ Copy the cookie from the output and set it as `LINKEDIN_COOKIE` in your client c
 <details>
 <summary><b>❗ Troubleshooting</b></summary>
 
-**Docker issues:**
-- Make sure [Docker](https://www.docker.com/get-started/) is installed
-- Check if Docker is running: `docker ps`
+**Installation issues:**
+- Ensure you have Claude Desktop installed
+- Download the latest DXT extension from releases
 
 **Login issues:**
 - Ensure your LinkedIn cookie is set and correct
 - Make sure you have only one active LinkedIn session per cookie at a time. Trying to open multiple sessions with the same cookie will result in a cookie invalid error.
-- LinkedIn may require a login confirmation in the LinkedIn mobile app for --get-cookie
+- LinkedIn may require a login confirmation in the LinkedIn mobile app
 - You might get a captcha challenge if you logged in a lot of times in a short period of time, then try again later or follow the [local setup instructions](#-local-setup-develop--contribute) to run the server manually in --no-headless mode where you can debug the login process (solve captcha manually)
 </details>
 
@@ -244,7 +281,7 @@ uvx --from git+https://github.com/stickerdaniel/linkedin-mcp-server linkedin-mcp
 uvx --from git+https://github.com/stickerdaniel/linkedin-mcp-server \
   linkedin-mcp-server --get-cookie
 ```
-Copy the cookie from the output and set it as `LINKEDIN_COOKIE` in your client configuration. If this fails with a captcha challenge, use the method above.
+Copy the cookie from the output and set it as `LINKEDIN_COOKIE` in your client configuration. If this fails with a captcha challenge, use the Chrome DevTools method above.
 </details>
 
 > [!NOTE]

@@ -52,6 +52,14 @@ class EnvironmentKeys:
     LOG_LEVEL = "LOG_LEVEL"
     LAZY_INIT = "LAZY_INIT"
     TRANSPORT = "TRANSPORT"
+    NON_INTERACTIVE = "NON_INTERACTIVE"
+    
+    # Azure Functions prefixed environment variables
+    LINKEDIN_MCP_LOG_LEVEL = "LINKEDIN_MCP_LOG_LEVEL"
+    LINKEDIN_MCP_HEADLESS = "LINKEDIN_MCP_HEADLESS"
+    LINKEDIN_MCP_LAZY_INIT = "LINKEDIN_MCP_LAZY_INIT"
+    LINKEDIN_MCP_TRANSPORT = "LINKEDIN_MCP_TRANSPORT"
+    LINKEDIN_MCP_NON_INTERACTIVE = "LINKEDIN_MCP_NON_INTERACTIVE"
 
 
 def find_chromedriver() -> Optional[str]:
@@ -74,8 +82,18 @@ def is_interactive_environment() -> bool:
     Detect if running in an interactive environment (TTY).
 
     Returns:
-        bool: True if both stdin and stdout are TTY devices
+        bool: True if both stdin and stdout are TTY devices, unless explicitly 
+              set to non-interactive via environment variables (for Azure Functions)
     """
+    # Check for explicit non-interactive environment variables first
+    non_interactive_env = os.environ.get("LINKEDIN_MCP_NON_INTERACTIVE") or os.environ.get("NON_INTERACTIVE")
+    if non_interactive_env in TRUTHY_VALUES:
+        return False
+    
+    # Check for Azure Functions environment
+    if os.environ.get("AZURE_FUNCTIONS_ENVIRONMENT") or os.environ.get("FUNCTIONS_WORKER_RUNTIME"):
+        return False
+    
     try:
         return sys.stdin.isatty() and sys.stdout.isatty()
     except (AttributeError, OSError):
@@ -124,31 +142,39 @@ def load_from_env(config: AppConfig) -> AppConfig:
     if user_agent := os.environ.get(EnvironmentKeys.USER_AGENT):
         config.chrome.user_agent = user_agent
 
-    # Log level
-    if log_level_env := os.environ.get(EnvironmentKeys.LOG_LEVEL):
+    # Log level (check both regular and prefixed versions)
+    if log_level_env := os.environ.get(EnvironmentKeys.LOG_LEVEL) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_LOG_LEVEL):
         log_level_upper = log_level_env.upper()
         if log_level_upper in ("DEBUG", "INFO", "WARNING", "ERROR"):
             config.server.log_level = log_level_upper
 
-    # Headless mode
-    if os.environ.get(EnvironmentKeys.HEADLESS) in FALSY_VALUES:
+    # Headless mode (check both regular and prefixed versions)
+    headless_env = os.environ.get(EnvironmentKeys.HEADLESS) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_HEADLESS)
+    if headless_env in FALSY_VALUES:
         config.chrome.headless = False
-    elif os.environ.get(EnvironmentKeys.HEADLESS) in TRUTHY_VALUES:
+    elif headless_env in TRUTHY_VALUES:
         config.chrome.headless = True
 
-    # Lazy initialization
-    if os.environ.get(EnvironmentKeys.LAZY_INIT) in TRUTHY_VALUES:
+    # Lazy initialization (check both regular and prefixed versions)
+    lazy_init_env = os.environ.get(EnvironmentKeys.LAZY_INIT) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_LAZY_INIT)
+    if lazy_init_env in TRUTHY_VALUES:
         config.server.lazy_init = True
-    elif os.environ.get(EnvironmentKeys.LAZY_INIT) in FALSY_VALUES:
+    elif lazy_init_env in FALSY_VALUES:
         config.server.lazy_init = False
 
-    # Transport mode
-    if transport_env := os.environ.get(EnvironmentKeys.TRANSPORT):
+    # Transport mode (check both regular and prefixed versions)
+    transport_env = os.environ.get(EnvironmentKeys.TRANSPORT) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_TRANSPORT)
+    if transport_env:
         config.server.transport_explicitly_set = True
         if transport_env == "stdio":
             config.server.transport = "stdio"
         elif transport_env == "streamable-http":
             config.server.transport = "streamable-http"
+    
+    # Non-interactive mode (Azure Functions specific)
+    non_interactive_env = os.environ.get(EnvironmentKeys.NON_INTERACTIVE) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_NON_INTERACTIVE)
+    if non_interactive_env in TRUTHY_VALUES:
+        config.is_interactive = False
 
     return config
 
