@@ -41,7 +41,7 @@ Enhanced `linkedin_mcp_server/config/loaders.py` to support:
 ### 4. Azure Functions Configuration Files
 - `host.json` - Azure Functions runtime configuration
 - `local.settings.json` - Local development settings template
-- `requirements.txt` - Azure Functions specific dependencies
+- `pyproject.toml` - Azure Functions specific dependencies
 
 ## Environment Variables
 

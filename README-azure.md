@@ -8,7 +8,7 @@ This directory contains the Azure Functions v2 model implementation for the Link
 function_app.py           # Main Azure Functions entry point
 host.json                 # Azure Functions host configuration
 local.settings.json       # Local development settings
-requirements.txt          # Python dependencies for Azure Functions
+pyproject.toml            # Python dependencies for Azure Functions
 azure-deploy.sh           # Deployment script
 README-azure.md          # This file
 ```
