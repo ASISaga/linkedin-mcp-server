@@ -1,0 +1,8 @@
+azure-functions>=1.18.0
+azure-functions-worker>=1.0.0
+fastmcp>=2.10.1
+inquirer>=3.4.0
+keyring>=25.6.0
+linkedin-api-client
+pyperclip>=1.9.0
+python-dotenv>=1.1.0
