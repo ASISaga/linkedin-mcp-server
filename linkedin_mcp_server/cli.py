@@ -52,21 +52,21 @@ def print_claude_config() -> None:
 
     # Environment variables for OAuth configuration
     env_vars: Dict[str, str] = {}
-    
+
     # OAuth credentials
     if config.linkedin.client_id:
         env_vars["LINKEDIN_CLIENT_ID"] = config.linkedin.client_id
     else:
         env_vars["LINKEDIN_CLIENT_ID"] = "your_client_id_here"
-        
+
     if config.linkedin.client_secret:
         env_vars["LINKEDIN_CLIENT_SECRET"] = config.linkedin.client_secret
     else:
         env_vars["LINKEDIN_CLIENT_SECRET"] = "your_client_secret_here"
-        
+
     if config.linkedin.redirect_uri:
         env_vars["LINKEDIN_REDIRECT_URI"] = config.linkedin.redirect_uri
-    
+
     # Optional: Direct access token
     if config.linkedin.access_token:
         env_vars["LINKEDIN_ACCESS_TOKEN"] = config.linkedin.access_token
@@ -82,7 +82,7 @@ def print_claude_config() -> None:
         "search_companies",
         "get_managed_companies",
         "search_job_postings",
-        "get_authentication_status"
+        "get_authentication_status",
     ]
 
     config_json: Dict[str, Any] = {
@@ -104,8 +104,12 @@ def print_claude_config() -> None:
     print("\n📋 Your Claude configuration for LinkedIn Official API:")
     print(config_str)
     print("\n🔧 Setup Instructions:")
-    print("1. Add this to your Claude Desktop configuration in Settings > Developer > Edit Config")
-    print("2. Replace 'your_client_id_here' and 'your_client_secret_here' with your actual LinkedIn OAuth credentials")
+    print(
+        "1. Add this to your Claude Desktop configuration in Settings > Developer > Edit Config"
+    )
+    print(
+        "2. Replace 'your_client_id_here' and 'your_client_secret_here' with your actual LinkedIn OAuth credentials"
+    )
     print("3. See LINKEDIN_PERMISSIONS_SETUP.md for detailed setup instructions")
     print("4. Use get_oauth_authorization_url tool to begin authentication flow")
 
@@ -132,22 +136,22 @@ def print_oauth_setup_info() -> None:
     print("   - Click 'Create App'")
     print("   - Fill in required information")
     print("   - Note your Client ID and Client Secret")
-    
+
     print("\n2. Configure OAuth Settings:")
     print("   - Add redirect URL: http://localhost:8000/auth/callback")
     print("   - Request API product access (Sign In with LinkedIn, etc.)")
-    
+
     print("\n3. Set Environment Variables:")
     print("   export LINKEDIN_CLIENT_ID='your_client_id'")
     print("   export LINKEDIN_CLIENT_SECRET='your_client_secret'")
     print("   export LINKEDIN_REDIRECT_URI='http://localhost:8000/auth/callback'")
-    
+
     print("\n4. OAuth Flow:")
     print("   - Use get_oauth_authorization_url to get authorization URL")
     print("   - Direct user to authorization URL")
     print("   - Get authorization code from callback")
     print("   - Use exchange_oauth_code to get access token")
-    
+
     print("\n📖 For detailed instructions, see: LINKEDIN_PERMISSIONS_SETUP.md")
 
 
@@ -162,19 +166,19 @@ def print_api_migration_info() -> None:
     print("   - Cookie authentication → OAuth 2.0")
     print("   - Chrome/Selenium → REST API client")
     print("   - Terms violation → Compliant API usage")
-    
+
     print("\n⚠️ Key Limitations:")
     print("   - Profile access: Only authenticated user's profile")
     print("   - Company access: Only companies you manage")
     print("   - Job access: Only your company's job postings")
     print("   - No public profile/company search")
-    
+
     print("\n🎯 Available Features:")
     print("   - User profile information (with proper scopes)")
     print("   - Company management (with admin permissions)")
     print("   - Job posting management (with admin permissions)")
     print("   - OAuth 2.0 authentication flow")
-    
+
     print("\n📋 Required Setup:")
     print("   1. LinkedIn Developer Application")
     print("   2. OAuth 2.0 credentials configuration")

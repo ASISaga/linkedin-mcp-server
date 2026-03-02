@@ -11,7 +11,6 @@ Key Functions:
 - Command-line argument parsing with comprehensive options
 - Environment variable parsing with type conversion
 - Integration with keyring providers for secure credential loading
-- Chrome driver path auto-detection and validation
 - Layered configuration with proper priority handling
 """
 
@@ -19,10 +18,9 @@ import argparse
 import logging
 import os
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from .providers import (
-    get_chromedriver_paths,
     get_cookie_from_keyring,
     get_credentials_from_keyring,
 )
@@ -38,43 +36,27 @@ FALSY_VALUES = ("0", "false", "False", "no", "No")
 class EnvironmentKeys:
     """Environment variable names used by the application."""
 
-    # LinkedIn configuration
+    # LinkedIn OAuth configuration
+    LINKEDIN_CLIENT_ID = "LINKEDIN_CLIENT_ID"
+    LINKEDIN_CLIENT_SECRET = "LINKEDIN_CLIENT_SECRET"
+    LINKEDIN_REDIRECT_URI = "LINKEDIN_REDIRECT_URI"
+    LINKEDIN_ACCESS_TOKEN = "LINKEDIN_ACCESS_TOKEN"
+    LINKEDIN_REFRESH_TOKEN = "LINKEDIN_REFRESH_TOKEN"
+
+    # Legacy scraping credentials (kept for backward compatibility)
     LINKEDIN_EMAIL = "LINKEDIN_EMAIL"
     LINKEDIN_PASSWORD = "LINKEDIN_PASSWORD"
     LINKEDIN_COOKIE = "LINKEDIN_COOKIE"
 
-    # Chrome configuration
-    CHROMEDRIVER = "CHROMEDRIVER"
-    HEADLESS = "HEADLESS"
-    USER_AGENT = "USER_AGENT"
-
     # Server configuration
     LOG_LEVEL = "LOG_LEVEL"
-    LAZY_INIT = "LAZY_INIT"
     TRANSPORT = "TRANSPORT"
     NON_INTERACTIVE = "NON_INTERACTIVE"
-    
+
     # Azure Functions prefixed environment variables
     LINKEDIN_MCP_LOG_LEVEL = "LINKEDIN_MCP_LOG_LEVEL"
-    LINKEDIN_MCP_HEADLESS = "LINKEDIN_MCP_HEADLESS"
-    LINKEDIN_MCP_LAZY_INIT = "LINKEDIN_MCP_LAZY_INIT"
     LINKEDIN_MCP_TRANSPORT = "LINKEDIN_MCP_TRANSPORT"
     LINKEDIN_MCP_NON_INTERACTIVE = "LINKEDIN_MCP_NON_INTERACTIVE"
-
-
-def find_chromedriver() -> Optional[str]:
-    """Find the ChromeDriver executable in common locations."""
-    # First check environment variable
-    if path := os.getenv("CHROMEDRIVER"):
-        if os.path.exists(path):
-            return path
-
-    # Check common locations
-    for path in get_chromedriver_paths():
-        if os.path.exists(path) and (os.access(path, os.X_OK) or path.endswith(".exe")):
-            return path
-
-    return None
 
 
 def is_interactive_environment() -> bool:
@@ -82,18 +64,22 @@ def is_interactive_environment() -> bool:
     Detect if running in an interactive environment (TTY).
 
     Returns:
-        bool: True if both stdin and stdout are TTY devices, unless explicitly 
+        bool: True if both stdin and stdout are TTY devices, unless explicitly
               set to non-interactive via environment variables (for Azure Functions)
     """
     # Check for explicit non-interactive environment variables first
-    non_interactive_env = os.environ.get("LINKEDIN_MCP_NON_INTERACTIVE") or os.environ.get("NON_INTERACTIVE")
+    non_interactive_env = os.environ.get(
+        "LINKEDIN_MCP_NON_INTERACTIVE"
+    ) or os.environ.get("NON_INTERACTIVE")
     if non_interactive_env in TRUTHY_VALUES:
         return False
-    
+
     # Check for Azure Functions environment
-    if os.environ.get("AZURE_FUNCTIONS_ENVIRONMENT") or os.environ.get("FUNCTIONS_WORKER_RUNTIME"):
+    if os.environ.get("AZURE_FUNCTIONS_ENVIRONMENT") or os.environ.get(
+        "FUNCTIONS_WORKER_RUNTIME"
+    ):
         return False
-    
+
     try:
         return sys.stdin.isatty() and sys.stdout.isatty()
     except (AttributeError, OSError):
@@ -125,7 +111,23 @@ def load_from_keyring(config: AppConfig) -> AppConfig:
 def load_from_env(config: AppConfig) -> AppConfig:
     """Load configuration from environment variables."""
 
-    # LinkedIn credentials
+    # LinkedIn OAuth credentials
+    if client_id := os.environ.get(EnvironmentKeys.LINKEDIN_CLIENT_ID):
+        config.linkedin.client_id = client_id
+
+    if client_secret := os.environ.get(EnvironmentKeys.LINKEDIN_CLIENT_SECRET):
+        config.linkedin.client_secret = client_secret
+
+    if redirect_uri := os.environ.get(EnvironmentKeys.LINKEDIN_REDIRECT_URI):
+        config.linkedin.redirect_uri = redirect_uri
+
+    if access_token := os.environ.get(EnvironmentKeys.LINKEDIN_ACCESS_TOKEN):
+        config.linkedin.access_token = access_token
+
+    if refresh_token := os.environ.get(EnvironmentKeys.LINKEDIN_REFRESH_TOKEN):
+        config.linkedin.refresh_token = refresh_token
+
+    # Legacy scraping credentials
     if email := os.environ.get(EnvironmentKeys.LINKEDIN_EMAIL):
         config.linkedin.email = email
 
@@ -135,44 +137,29 @@ def load_from_env(config: AppConfig) -> AppConfig:
     if cookie := os.environ.get(EnvironmentKeys.LINKEDIN_COOKIE):
         config.linkedin.cookie = cookie
 
-    # ChromeDriver configuration
-    if chromedriver := os.environ.get(EnvironmentKeys.CHROMEDRIVER):
-        config.chrome.chromedriver_path = chromedriver
-
-    if user_agent := os.environ.get(EnvironmentKeys.USER_AGENT):
-        config.chrome.user_agent = user_agent
-
     # Log level (check both regular and prefixed versions)
-    if log_level_env := os.environ.get(EnvironmentKeys.LOG_LEVEL) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_LOG_LEVEL):
+    if log_level_env := os.environ.get(EnvironmentKeys.LOG_LEVEL) or os.environ.get(
+        EnvironmentKeys.LINKEDIN_MCP_LOG_LEVEL
+    ):
         log_level_upper = log_level_env.upper()
         if log_level_upper in ("DEBUG", "INFO", "WARNING", "ERROR"):
             config.server.log_level = log_level_upper
 
-    # Headless mode (check both regular and prefixed versions)
-    headless_env = os.environ.get(EnvironmentKeys.HEADLESS) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_HEADLESS)
-    if headless_env in FALSY_VALUES:
-        config.chrome.headless = False
-    elif headless_env in TRUTHY_VALUES:
-        config.chrome.headless = True
-
-    # Lazy initialization (check both regular and prefixed versions)
-    lazy_init_env = os.environ.get(EnvironmentKeys.LAZY_INIT) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_LAZY_INIT)
-    if lazy_init_env in TRUTHY_VALUES:
-        config.server.lazy_init = True
-    elif lazy_init_env in FALSY_VALUES:
-        config.server.lazy_init = False
-
     # Transport mode (check both regular and prefixed versions)
-    transport_env = os.environ.get(EnvironmentKeys.TRANSPORT) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_TRANSPORT)
+    transport_env = os.environ.get(EnvironmentKeys.TRANSPORT) or os.environ.get(
+        EnvironmentKeys.LINKEDIN_MCP_TRANSPORT
+    )
     if transport_env:
         config.server.transport_explicitly_set = True
         if transport_env == "stdio":
             config.server.transport = "stdio"
         elif transport_env == "streamable-http":
             config.server.transport = "streamable-http"
-    
+
     # Non-interactive mode (Azure Functions specific)
-    non_interactive_env = os.environ.get(EnvironmentKeys.NON_INTERACTIVE) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_NON_INTERACTIVE)
+    non_interactive_env = os.environ.get(
+        EnvironmentKeys.NON_INTERACTIVE
+    ) or os.environ.get(EnvironmentKeys.LINKEDIN_MCP_NON_INTERACTIVE)
     if non_interactive_env in TRUTHY_VALUES:
         config.is_interactive = False
 
@@ -182,25 +169,13 @@ def load_from_env(config: AppConfig) -> AppConfig:
 def load_from_args(config: AppConfig) -> AppConfig:
     """Load configuration from command line arguments."""
     parser = argparse.ArgumentParser(
-        description="LinkedIn MCP Server - A Model Context Protocol server for LinkedIn integration"
-    )
-
-    parser.add_argument(
-        "--no-headless",
-        action="store_true",
-        help="Run Chrome with a visible browser window (useful for debugging)",
+        description="LinkedIn MCP Server - A Model Context Protocol server for LinkedIn integration using the official LinkedIn API"
     )
 
     parser.add_argument(
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Set logging level (default: WARNING)",
-    )
-
-    parser.add_argument(
-        "--no-lazy-init",
-        action="store_true",
-        help="Initialize Chrome driver and login immediately",
     )
 
     parser.add_argument(
@@ -231,48 +206,11 @@ def load_from_args(config: AppConfig) -> AppConfig:
         help="HTTP server path (default: /mcp)",
     )
 
-    parser.add_argument(
-        "--chromedriver",
-        type=str,
-        help="Specify the path to the ChromeDriver executable",
-    )
-
-    parser.add_argument(
-        "--get-cookie",
-        action="store_true",
-        help="Login with credentials and display cookie for Docker setup",
-    )
-
-    parser.add_argument(
-        "--clear-keychain",
-        action="store_true",
-        help="Clear all stored LinkedIn credentials and cookies from system keychain",
-    )
-
-    parser.add_argument(
-        "--cookie",
-        type=str,
-        help="Specify LinkedIn cookie directly",
-    )
-
-    parser.add_argument(
-        "--user-agent",
-        type=str,
-        help="Specify custom user agent string to prevent anti-scraping detection",
-    )
-
     args = parser.parse_args()
-
-    # Update configuration with parsed arguments
-    if args.no_headless:
-        config.chrome.headless = False
 
     # Handle log level argument
     if args.log_level:
         config.server.log_level = args.log_level
-
-    if args.no_lazy_init:
-        config.server.lazy_init = False
 
     if args.transport:
         config.server.transport = args.transport
@@ -287,19 +225,6 @@ def load_from_args(config: AppConfig) -> AppConfig:
     if args.path:
         config.server.path = args.path
 
-    if args.chromedriver:
-        config.chrome.chromedriver_path = args.chromedriver
-
-    if args.get_cookie:
-        config.server.get_cookie = True
-    if args.clear_keychain:
-        config.server.clear_keychain = True
-    if args.cookie:
-        config.linkedin.cookie = args.cookie
-
-    if args.user_agent:
-        config.chrome.user_agent = args.user_agent
-
     return config
 
 
@@ -311,7 +236,6 @@ def detect_environment() -> Dict[str, Any]:
         Dict containing detected environment settings
     """
     return {
-        "chromedriver_path": find_chromedriver(),
         "is_interactive": is_interactive_environment(),
     }
 
@@ -324,7 +248,7 @@ def load_config() -> AppConfig:
     1. Command line arguments (highest priority)
     2. Environment variables
     3. System keyring
-    4. Auto-detection (ChromeDriver, interactive mode)
+    4. Auto-detection (interactive mode)
     5. Defaults (lowest priority)
 
     Returns:
@@ -338,13 +262,6 @@ def load_config() -> AppConfig:
 
     # Apply environment detection
     env_settings = detect_environment()
-
-    # Set detected values if not already configured
-    if env_settings["chromedriver_path"] and not config.chrome.chromedriver_path:
-        config.chrome.chromedriver_path = env_settings["chromedriver_path"]
-        logger.debug(
-            f"Auto-detected ChromeDriver found at: {env_settings['chromedriver_path']}"
-        )
 
     config.is_interactive = env_settings["is_interactive"]
     logger.debug(f"Auto-detected interactive mode: {config.is_interactive}")

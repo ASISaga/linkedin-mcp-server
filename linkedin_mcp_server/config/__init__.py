@@ -27,7 +27,7 @@ from .providers import (
     get_keyring_name,
     save_credentials_to_keyring,
 )
-from .schema import AppConfig, ChromeConfig, LinkedInConfig, ServerConfig
+from .schema import AppConfig, LinkedInConfig, ServerConfig
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,6 @@ def reset_config() -> None:
 # Export schema classes for type annotations
 __all__ = [
     "AppConfig",
-    "ChromeConfig",
     "LinkedInConfig",
     "ServerConfig",
     "get_config",

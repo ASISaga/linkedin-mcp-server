@@ -4,44 +4,22 @@ Configuration schema definitions for LinkedIn MCP Server.
 
 This module defines the dataclass schemas that represent the application's configuration
 structure. It provides type-safe configuration objects with validation and default values
-for all aspects of the server including Chrome driver settings, LinkedIn credentials,
-and MCP server parameters.
+for all aspects of the server including LinkedIn OAuth credentials and MCP server parameters.
 
 Key Components:
-- ChromeConfig: Chrome driver and browser configuration
-- LinkedInConfig: LinkedIn authentication and connection settings
+- LinkedInConfig: LinkedIn OAuth authentication and connection settings
 - ServerConfig: MCP server transport and operational settings
 - AppConfig: Main application configuration combining all components
 """
 
 from dataclasses import dataclass, field
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 
 class ConfigurationError(Exception):
     """Raised when configuration validation fails."""
 
     pass
-
-
-@dataclass
-class ChromeConfig:
-    """Configuration for Chrome driver (DEPRECATED - Not used in official API mode)."""
-
-    headless: bool = True
-    chromedriver_path: Optional[str] = None
-    browser_args: List[str] = field(default_factory=list)
-    user_agent: Optional[str] = None
-    
-    def __post_init__(self):
-        """Warn about deprecated Chrome configuration."""
-        import warnings
-        warnings.warn(
-            "ChromeConfig is deprecated. The LinkedIn MCP Server now uses the official LinkedIn API "
-            "instead of web scraping and no longer requires Chrome/Selenium.",
-            DeprecationWarning,
-            stacklevel=2
-        )
 
 
 @dataclass
@@ -52,12 +30,12 @@ class LinkedInConfig:
     client_id: Optional[str] = None
     client_secret: Optional[str] = None
     redirect_uri: str = "http://localhost:8000/auth/callback"
-    
+
     # Access token (for direct API access without OAuth flow)
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
-    
-    # Legacy scraping credentials (deprecated)
+
+    # Legacy scraping credentials (kept for backward compatibility only)
     email: Optional[str] = None
     password: Optional[str] = None
     cookie: Optional[str] = None
@@ -70,12 +48,12 @@ class ServerConfig:
     transport: Literal["stdio", "streamable-http"] = "stdio"
     transport_explicitly_set: bool = False  # Track if transport was explicitly set
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "WARNING"
-    
+
     # HTTP transport configuration
     host: str = "127.0.0.1"
     port: int = 8000
     path: str = "/mcp"
-    
+
     # OAuth flow configuration
     oauth_flow: bool = False  # Enable OAuth flow for authentication
 
@@ -84,7 +62,6 @@ class ServerConfig:
 class AppConfig:
     """Main application configuration."""
 
-    chrome: ChromeConfig = field(default_factory=ChromeConfig)
     linkedin: LinkedInConfig = field(default_factory=LinkedInConfig)
     server: ServerConfig = field(default_factory=ServerConfig)
     is_interactive: bool = field(default=False)
