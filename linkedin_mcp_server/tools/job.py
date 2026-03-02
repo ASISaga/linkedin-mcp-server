@@ -7,7 +7,7 @@ Note: Job data access through the official API is very limited compared to scrap
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from fastmcp import FastMCP
 
@@ -26,11 +26,13 @@ def register_job_tools(mcp: FastMCP) -> None:
     """
 
     @mcp.tool()
-    async def search_job_postings(search_criteria: Dict[str, Any], start: int = 0, count: int = 20) -> Dict[str, Any]:
+    async def search_job_postings(
+        search_criteria: Dict[str, Any], start: int = 0, count: int = 20
+    ) -> Dict[str, Any]:
         """
         Search for job postings using LinkedIn's API.
-        
-        Note: This typically requires specific API access and may be limited 
+
+        Note: This typically requires specific API access and may be limited
         to job postings from companies you manage.
 
         Args:
@@ -50,50 +52,54 @@ def register_job_tools(mcp: FastMCP) -> None:
         try:
             client = get_authenticated_client()
             access_token = get_access_token()
-            
+
             query_params = {
                 "search": search_criteria,
                 "start": start,
-                "count": min(count, 100)
+                "count": min(count, 100),
             }
-            
+
             logger.info("Searching job postings via LinkedIn API")
             response = client.finder(
                 resource_path="/jobPostings",
                 finder_name="search",
                 access_token=access_token,
-                query_params=query_params
+                query_params=query_params,
             )
-            
+
             if response.status_code != 200:
                 raise APIError(f"LinkedIn API returned status {response.status_code}")
-            
+
             return {
                 "job_postings": response.elements,
                 "paging": response.paging.__dict__ if response.paging else None,
-                "total_results": response.paging.total if response.paging else len(response.elements)
+                "total_results": response.paging.total
+                if response.paging
+                else len(response.elements),
             }
-            
+
         except AuthenticationError as e:
             logger.error(f"Authentication failed: {e}")
             return {
                 "error": "Authentication required",
                 "message": str(e),
-                "note": "Job posting access requires specific API permissions"
+                "note": "Job posting access requires specific API permissions",
             }
         except Exception as e:
             logger.error(f"Error in search_job_postings: {e}")
             return {
                 "error": "Failed to search job postings",
                 "message": str(e),
-                "note": "Job posting access is typically limited to companies you manage"
+                "note": "Job posting access is typically limited to companies you manage",
             }
 
     @mcp.tool()
-    async def get_company_job_postings(company_urn: str, start: int = 0, count: int = 20) -> Dict[str, Any]:
+    async def get_company_job_postings(
+        company_urn: str, start: int = 0, count: int = 20
+    ) -> Dict[str, Any]:
         """
         Get job postings for a specific company.
-        
+
         Note: Access is typically limited to companies you manage.
 
         Args:
@@ -106,26 +112,23 @@ def register_job_tools(mcp: FastMCP) -> None:
         """
         try:
             search_criteria = {
-                "companyJobsFilterCriteria": {
-                    "company": company_urn
-                },
-                "status": {"values": ["LISTED", "DRAFT"]}
-            }
-            
-            return await search_job_postings(search_criteria, start, count)
-            
-        except Exception as e:
-            logger.error(f"Error in get_company_job_postings: {e}")
-            return {
-                "error": "Failed to fetch company job postings",
-                "message": str(e)
+                "companyJobsFilterCriteria": {"company": company_urn},
+                "status": {"values": ["LISTED", "DRAFT"]},
             }
 
+            return await search_job_postings(search_criteria, start, count)
+
+        except Exception as e:
+            logger.error(f"Error in get_company_job_postings: {e}")
+            return {"error": "Failed to fetch company job postings", "message": str(e)}
+
     @mcp.tool()
-    async def create_job_posting(company_urn: str, job_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_job_posting(
+        company_urn: str, job_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Create a new job posting for a company.
-        
+
         Requires company admin permissions and appropriate API access.
 
         Args:
@@ -144,7 +147,7 @@ def register_job_tools(mcp: FastMCP) -> None:
         try:
             client = get_authenticated_client()
             access_token = get_access_token()
-            
+
             # Structure the job posting entity
             job_entity = {
                 "companyApplyUrl": job_data.get("apply_url"),
@@ -158,39 +161,41 @@ def register_job_tools(mcp: FastMCP) -> None:
                 "title": job_data.get("title", ""),
                 "partner": company_urn,
                 "location": job_data.get("location", ""),
-                "workplaceTypes": job_data.get("workplace_types", ["on_site"])
+                "workplaceTypes": job_data.get("workplace_types", ["on_site"]),
             }
-            
+
             logger.info(f"Creating job posting for company: {company_urn}")
             response = client.create(
                 resource_path="/jobPostings",
                 entity=job_entity,
-                access_token=access_token
+                access_token=access_token,
             )
-            
+
             if response.status_code not in [200, 201]:
                 raise APIError(f"LinkedIn API returned status {response.status_code}")
-            
+
             return {
                 "success": True,
                 "job_posting_id": response.entity_id,
                 "job_posting_urn": f"urn:li:jobPosting:{response.entity_id}",
-                "company_urn": company_urn
+                "company_urn": company_urn,
             }
-            
+
         except Exception as e:
             logger.error(f"Error in create_job_posting: {e}")
             return {
                 "error": "Failed to create job posting",
                 "message": str(e),
-                "note": "This requires company admin permissions and Job Posting API access"
+                "note": "This requires company admin permissions and Job Posting API access",
             }
 
     @mcp.tool()
-    async def get_job_applications(job_posting_urn: str, start: int = 0, count: int = 20) -> Dict[str, Any]:
+    async def get_job_applications(
+        job_posting_urn: str, start: int = 0, count: int = 20
+    ) -> Dict[str, Any]:
         """
         Get applications for a specific job posting.
-        
+
         Requires company admin permissions and appropriate API access.
 
         Args:
@@ -204,43 +209,43 @@ def register_job_tools(mcp: FastMCP) -> None:
         try:
             client = get_authenticated_client()
             access_token = get_access_token()
-            
+
             query_params = {
                 "jobPosting": job_posting_urn,
                 "start": start,
-                "count": min(count, 100)
+                "count": min(count, 100),
             }
-            
+
             logger.info(f"Fetching applications for job: {job_posting_urn}")
             response = client.finder(
                 resource_path="/jobApplications",
                 finder_name="jobPosting",
                 access_token=access_token,
-                query_params=query_params
+                query_params=query_params,
             )
-            
+
             if response.status_code != 200:
                 raise APIError(f"LinkedIn API returned status {response.status_code}")
-            
+
             return {
                 "applications": response.elements,
                 "paging": response.paging.__dict__ if response.paging else None,
-                "job_posting_urn": job_posting_urn
+                "job_posting_urn": job_posting_urn,
             }
-            
+
         except Exception as e:
             logger.error(f"Error in get_job_applications: {e}")
             return {
                 "error": "Failed to fetch job applications",
                 "message": str(e),
-                "note": "This requires Job Posting API access and company admin permissions"
+                "note": "This requires Job Posting API access and company admin permissions",
             }
 
     @mcp.tool()
     async def get_job_posting_analytics(job_posting_urn: str) -> Dict[str, Any]:
         """
         Get analytics data for a job posting.
-        
+
         Requires company admin permissions and analytics API access.
 
         Args:
@@ -252,33 +257,28 @@ def register_job_tools(mcp: FastMCP) -> None:
         try:
             client = get_authenticated_client()
             access_token = get_access_token()
-            
-            query_params = {
-                "jobPosting": job_posting_urn
-            }
-            
+
+            query_params = {"jobPosting": job_posting_urn}
+
             logger.info(f"Fetching analytics for job: {job_posting_urn}")
             response = client.finder(
                 resource_path="/jobPostingAnalytics",
-                finder_name="jobPosting", 
+                finder_name="jobPosting",
                 access_token=access_token,
-                query_params=query_params
+                query_params=query_params,
             )
-            
+
             if response.status_code != 200:
                 raise APIError(f"LinkedIn API returned status {response.status_code}")
-            
-            return {
-                "analytics": response.elements,
-                "job_posting_urn": job_posting_urn
-            }
-            
+
+            return {"analytics": response.elements, "job_posting_urn": job_posting_urn}
+
         except Exception as e:
             logger.error(f"Error in get_job_posting_analytics: {e}")
             return {
                 "error": "Failed to fetch job posting analytics",
                 "message": str(e),
-                "note": "This requires analytics API access and company admin permissions"
+                "note": "This requires analytics API access and company admin permissions",
             }
 
     @mcp.tool()
@@ -295,22 +295,22 @@ def register_job_tools(mcp: FastMCP) -> None:
                 "job_details": "Only accessible for your own company's job postings",
                 "job_applications": "Requires company admin permissions",
                 "public_job_search": "Not available through official API",
-                "job_recommendations": "Not available through standard API"
+                "job_recommendations": "Not available through standard API",
             },
             "required_permissions": {
                 "job_posting_api": "Required for creating and managing job postings",
                 "company_admin": "Required for accessing company job data",
-                "analytics_api": "Required for job posting analytics"
+                "analytics_api": "Required for job posting analytics",
             },
             "migration_notes": {
                 "from_scraping": "Official API has much more limited job access than scraping",
                 "data_coverage": "Only your own company's jobs are accessible",
                 "public_search": "Public job search is not supported",
-                "alternative": "Consider maintaining scraping approach for public job data with appropriate compliance"
+                "alternative": "Consider maintaining scraping approach for public job data with appropriate compliance",
             },
             "compliance": {
                 "official_api": "Fully compliant with LinkedIn Terms of Service",
                 "rate_limits": "Apply according to your API product tier",
-                "enterprise_options": "Contact LinkedIn for enterprise job data solutions"
-            }
+                "enterprise_options": "Contact LinkedIn for enterprise job data solutions",
+            },
         }

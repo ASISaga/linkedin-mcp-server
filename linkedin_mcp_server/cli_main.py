@@ -4,7 +4,7 @@ LinkedIn MCP Server - Main CLI application entry point using official LinkedIn A
 
 Implements OAuth 2.0 authentication flow for the official LinkedIn API:
 1. Configuration and Logging Setup
-2. OAuth Authentication Management  
+2. OAuth Authentication Management
 3. MCP Server Runtime with API client
 """
 
@@ -19,12 +19,12 @@ except ImportError:
     inquirer = None
 
 from linkedin_mcp_server.cli import (
-    print_claude_config, 
+    print_claude_config,
     print_oauth_setup_info,
-    print_api_migration_info
+    print_api_migration_info,
 )
 from linkedin_mcp_server.config import get_config
-from linkedin_mcp_server.exceptions import AuthenticationError, ConfigurationError
+from linkedin_mcp_server.exceptions import ConfigurationError
 from linkedin_mcp_server.logging_config import configure_logging
 from linkedin_mcp_server.server import create_mcp_server
 
@@ -38,7 +38,7 @@ def choose_transport_interactive() -> Literal["stdio", "streamable-http"]:
     if not inquirer:
         print("Interactive mode requires 'inquirer' package. Using stdio transport.")
         return "stdio"
-        
+
     questions = [
         inquirer.List(
             "transport",
@@ -68,16 +68,16 @@ def show_migration_info() -> None:
 def check_oauth_configuration() -> None:
     """
     Check if OAuth configuration is available.
-    
+
     Raises:
         ConfigurationError: If OAuth configuration is missing
     """
     config = get_config()
-    
+
     # Check if we have either OAuth credentials or a direct access token
     has_oauth_creds = bool(config.linkedin.client_id and config.linkedin.client_secret)
     has_access_token = bool(config.linkedin.access_token)
-    
+
     if not has_oauth_creds and not has_access_token:
         raise ConfigurationError(
             "LinkedIn OAuth configuration is missing. You need either:\n"
@@ -85,7 +85,7 @@ def check_oauth_configuration() -> None:
             "  2. Direct access token: LINKEDIN_ACCESS_TOKEN\n"
             "\nSee LINKEDIN_PERMISSIONS_SETUP.md for detailed setup instructions."
         )
-    
+
     if has_oauth_creds:
         logger.info("OAuth credentials configured - authentication flow available")
     if has_access_token:
@@ -98,20 +98,22 @@ def test_api_connection() -> None:
     """
     try:
         from linkedin_mcp_server.linkedin_auth import get_oauth_manager
-        
+
         oauth_manager = get_oauth_manager()
-        
+
         # Try to check authentication status
         is_authenticated = oauth_manager.is_authenticated()
         if is_authenticated:
             token_info = oauth_manager.introspect_token()
-            logger.info(f"✅ API connection successful - Token active: {token_info.get('active', False)}")
+            logger.info(
+                f"✅ API connection successful - Token active: {token_info.get('active', False)}"
+            )
             print("✅ LinkedIn API connection verified")
         else:
             logger.info("OAuth configured but not yet authenticated")
             print("⚠️ OAuth configured but authentication required")
             print("💡 Use get_oauth_authorization_url tool to begin authentication")
-            
+
     except Exception as e:
         logger.warning(f"API connection test failed: {e}")
         print("⚠️ API connection test failed - OAuth flow may be required")
@@ -139,7 +141,7 @@ def get_version() -> str:
 
 def main() -> None:
     """Main application entry point for LinkedIn API MCP server."""
-    
+
     # Get configuration
     config = get_config()
 
@@ -171,7 +173,7 @@ def main() -> None:
     except ConfigurationError as e:
         logger.error(f"Configuration error: {e}")
         if config.is_interactive:
-            print(f"\n❌ Configuration Error:")
+            print("\n❌ Configuration Error:")
             print(str(e))
             print("\n💡 See LINKEDIN_PERMISSIONS_SETUP.md for setup instructions")
         sys.exit(1)
@@ -207,8 +209,10 @@ def main() -> None:
 
         # Start server
         print(f"\n🚀 Running LinkedIn MCP server ({transport.upper()} mode)...")
-        print("📱 Available tools: OAuth authentication, profile access, company management")
-        
+        print(
+            "📱 Available tools: OAuth authentication, profile access, company management"
+        )
+
         if transport == "streamable-http":
             print(
                 f"📡 HTTP server available at http://{config.server.host}:{config.server.port}{config.server.path}"
