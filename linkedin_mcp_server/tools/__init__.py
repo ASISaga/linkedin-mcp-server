@@ -1,19 +1,21 @@
-# src/linkedin_mcp_server/tools/__init__.py
+# linkedin_mcp_server/tools/__init__.py
 """
-LinkedIn scraping tools package.
+LinkedIn official API tools package.
 
-This package contains the MCP tool implementations for LinkedIn data extraction.
-Each tool module provides specific functionality for different LinkedIn entities
-while sharing common error handling and driver management patterns.
+Each module in this package exports a single *registrar* function following
+the ``register_<domain>_tools(mcp: FastMCP) -> None`` convention.  These
+registrars are passed to ``mcp_platform.server.create_mcp_server`` to build
+the LinkedIn MCP server, and can be composed in any combination.
 
-Available Tools:
-- Person tools: LinkedIn profile scraping and analysis
-- Company tools: Company profile and information extraction
-- Job tools: Job posting details and search functionality
+Modules
+-------
+auth.py     OAuth lifecycle, token management, server info
+person.py   Profile access, email, post creation
+company.py  Organisation info, posts, follower/page statistics
+job.py      Job postings, applications, analytics
+social.py   Reactions, comments, UGC posts, shares, social metadata
 
-Architecture:
-- FastMCP integration for MCP-compliant tool registration
-- Shared error handling through centralized error_handler module
-- Singleton driver pattern for session persistence
-- Structured data return format for consistent MCP responses
+This same registrar pattern makes it straightforward to build an equivalent
+server for any other platform (e.g. Reddit) without touching the MCP or
+Azure hosting layers.
 """

@@ -1,28 +1,22 @@
-# src/linkedin_mcp_server/error_handler.py
+# linkedin_mcp_server/error_handler.py
 """
 Centralized error handling for LinkedIn MCP Server with structured responses.
 
-Provides DRY approach to error handling across all tools with consistent MCP response
-format, specific LinkedIn error categorization, and proper logging integration.
-Eliminates code duplication while ensuring user-friendly error messages.
+Provides DRY approach to error handling across all tools with consistent MCP
+response format, LinkedIn-specific error categorization, and proper logging.
 """
 
 import logging
 from typing import Any, Dict, List
 
-from linkedin_scraper.exceptions import (
-    CaptchaRequiredError,
-    InvalidCredentialsError,
-    LoginTimeoutError,
-    RateLimitError,
-    SecurityChallengeError,
-    TwoFactorAuthError,
-)
-
 from linkedin_mcp_server.exceptions import (
+    APIError,
+    AuthenticationError,
     CredentialsNotFoundError,
     LinkedInMCPError,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def handle_tool_error(exception: Exception, context: str = "") -> Dict[str, Any]:
@@ -52,7 +46,7 @@ def handle_tool_error_list(
     Returns:
         List containing structured error response dictionary
     """
-    return convert_exception_to_list_response(exception, context)
+    return [convert_exception_to_response(exception, context)]
 
 
 def convert_exception_to_response(
@@ -72,109 +66,45 @@ def convert_exception_to_response(
         return {
             "error": "authentication_not_found",
             "message": str(exception),
-            "resolution": "Provide LinkedIn cookie via LINKEDIN_COOKIE environment variable or run setup",
+            "resolution": (
+                "Set LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, and "
+                "LINKEDIN_ACCESS_TOKEN environment variables."
+            ),
         }
 
-    elif isinstance(exception, InvalidCredentialsError):
+    if isinstance(exception, AuthenticationError):
         return {
-            "error": "invalid_credentials",
+            "error": "authentication_error",
             "message": str(exception),
-            "resolution": "Check your LinkedIn email and password",
+            "resolution": "Verify OAuth credentials and complete the authorization flow.",
         }
 
-    elif isinstance(exception, CaptchaRequiredError):
+    if isinstance(exception, APIError):
         return {
-            "error": "captcha_required",
+            "error": "api_error",
             "message": str(exception),
-            "captcha_url": exception.captcha_url,
-            "resolution": "Complete the captcha challenge manually",
+            "resolution": "Check API permissions and rate limits.",
         }
 
-    elif isinstance(exception, SecurityChallengeError):
-        return {
-            "error": "security_challenge_required",
-            "message": str(exception),
-            "challenge_url": getattr(exception, "challenge_url", None),
-            "resolution": "Complete the security challenge manually",
-        }
-
-    elif isinstance(exception, TwoFactorAuthError):
-        return {
-            "error": "two_factor_auth_required",
-            "message": str(exception),
-            "resolution": "Complete 2FA verification",
-        }
-
-    elif isinstance(exception, RateLimitError):
-        return {
-            "error": "rate_limit",
-            "message": str(exception),
-            "resolution": "Wait before attempting to login again",
-        }
-
-    elif isinstance(exception, LoginTimeoutError):
-        return {
-            "error": "login_timeout",
-            "message": str(exception),
-            "resolution": "Check network connection and try again",
-        }
-
-    elif isinstance(exception, LinkedInMCPError):
+    if isinstance(exception, LinkedInMCPError):
         return {"error": "linkedin_error", "message": str(exception)}
 
-    else:
-        # Generic error handling with structured logging
-        logger = logging.getLogger(__name__)
-        logger.error(
-            f"Error in {context}: {exception}",
-            extra={
-                "context": context,
-                "exception_type": type(exception).__name__,
-                "exception_message": str(exception),
-            },
-        )
-        return {
-            "error": "unknown_error",
-            "message": f"Failed to execute {context}: {str(exception)}",
-        }
+    # Generic error with structured logging
+    logger.error(
+        "Error in %s: %s",
+        context,
+        exception,
+        extra={
+            "context": context,
+            "exception_type": type(exception).__name__,
+            "exception_message": str(exception),
+        },
+    )
+    return {
+        "error": "unknown_error",
+        "message": f"Failed to execute {context}: {str(exception)}",
+    }
 
 
-def convert_exception_to_list_response(
-    exception: Exception, context: str = ""
-) -> List[Dict[str, Any]]:
-    """
-    Convert an exception to a list-formatted structured MCP response.
-
-    Some tools return lists, so this provides the same error handling
-    but wrapped in a list format.
-
-    Args:
-        exception: The exception to convert
-        context: Additional context about where the error occurred
-
-    Returns:
-        List containing single structured error response dictionary
-    """
-    return [convert_exception_to_response(exception, context)]
-
-
-def safe_get_driver():
-    """
-    Safely get or create a driver with proper error handling.
-
-    Returns:
-        Driver instance
-
-    Raises:
-        LinkedInMCPError: If driver initialization fails
-    """
-    from linkedin_mcp_server.authentication import ensure_authentication
-    from linkedin_mcp_server.drivers.chrome import get_or_create_driver
-
-    # Get authentication first
-    authentication = ensure_authentication()
-
-    # Create driver with authentication
-    driver = get_or_create_driver(authentication)
-
-    return driver
+# Keep list variant as alias for backward compatibility
+convert_exception_to_list_response = handle_tool_error_list
